@@ -88,7 +88,7 @@ export default function Dashboard() {
         {latestTweets.length === 0 ? (
           <div className="empty">暂无推文数据</div>
         ) : (
-          latestTweets.map(t => <TweetCard key={t._id} tweet={t} />)
+          latestTweets.map(t => <TweetCard key={t.id} tweet={t} />)
         )}
       </div>
     </div>

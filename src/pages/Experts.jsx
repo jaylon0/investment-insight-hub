@@ -13,6 +13,15 @@ const categories = [
   { key: 'techstock', label: '科技股' }
 ]
 
+const categoryEmoji = {
+  macro: '🌍',
+  stock: '📈',
+  quant: '🔢',
+  tech: '📊',
+  fund: '💰',
+  techstock: '💻'
+}
+
 export default function Experts() {
   const [influencers, setInfluencers] = useState([])
   const [loading, setLoading] = useState(true)
@@ -28,6 +37,11 @@ export default function Experts() {
 
   return (
     <div className="experts">
+      <div className="experts-header">
+        <h2>投资大V</h2>
+        <p>跟踪 {influencers.length} 位专业投资人的观点</p>
+      </div>
+
       <div className="filter-bar">
         {categories.map(c => (
           <button
@@ -35,21 +49,27 @@ export default function Experts() {
             className={`filter-item ${activeCategory === c.key ? 'active' : ''}`}
             onClick={() => setActiveCategory(c.key)}
           >
+            {c.key !== 'all' && <span className="filter-emoji">{categoryEmoji[c.key]}</span>}
             {c.label}
           </button>
         ))}
       </div>
 
-      <div className="expert-list">
+      <div className="expert-grid">
         {filtered.map(i => (
-          <Link key={i._id} to={`/experts/${i._id}`} className="expert-card">
-            <div className="expert-avatar">{i.displayName[0]}</div>
+          <Link key={i.id} to={`/experts/${i.id}`} className="expert-card">
+            <div className="expert-avatar">
+              <span>{i.displayName[0]}</span>
+            </div>
             <div className="expert-info">
               <div className="expert-name">{i.displayName}</div>
               <div className="expert-handle">@{i.handle}</div>
               <div className="expert-bio">{i.bio}</div>
+              <div className="expert-meta">
+                <span className="expert-followers">{(i.followers / 1000).toFixed(0)}K 粉丝</span>
+                <span className="expert-category">{categoryEmoji[i.category]} {categories.find(c => c.key === i.category)?.label}</span>
+              </div>
             </div>
-            <div className="expert-arrow">→</div>
           </Link>
         ))}
       </div>

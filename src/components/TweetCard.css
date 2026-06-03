@@ -1,29 +1,34 @@
 .tweet-card {
   background: white;
-  border-radius: var(--radius);
-  padding: 16px;
-  margin-bottom: 12px;
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 16px;
   box-shadow: var(--shadow);
+  transition: all 0.2s;
+}
+
+.tweet-card:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
 }
 
 .tweet-header {
   display: flex;
   align-items: center;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
 
 .avatar {
-  width: 40px;
-  height: 40px;
-  background: #e3f2fd;
-  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-right: 10px;
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--primary);
+  margin-right: 12px;
+  font-size: 18px;
+  font-weight: 700;
+  color: white;
 }
 
 .user-info {
@@ -38,35 +43,127 @@
 .handle {
   font-size: 12px;
   color: var(--text-muted);
+  margin-top: 2px;
 }
 
 .tweet-summary {
-  font-size: 15px;
-  font-weight: 500;
-  margin-bottom: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 10px;
   line-height: 1.5;
+  color: var(--text);
 }
 
 .tweet-content {
   font-size: 14px;
   color: var(--text-secondary);
-  line-height: 1.6;
-  margin-bottom: 10px;
+  line-height: 1.7;
+  margin-bottom: 12px;
+  white-space: pre-wrap;
+}
+
+.tweet-insights {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.insight-tag {
+  background: #fff3e0;
+  color: #e65100;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 12px;
 }
 
 .tweet-tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  margin-bottom: 10px;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.stock-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  background: #e3f2fd;
+  color: var(--primary);
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+
+.stock-tag:hover {
+  background: #bbdefb;
+}
+
+.stock-action {
+  font-weight: 700;
+}
+
+.stock-action {
+  color: #4caf50;
+}
+
+.stock-tag .stock-action {
+  color: #4caf50;
+}
+
+.stock-target {
+  color: var(--text-muted);
+  font-size: 11px;
 }
 
 .tweet-footer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   border-top: 1px solid var(--border);
-  padding-top: 10px;
-  font-size: 13px;
+  padding-top: 12px;
+  font-size: 12px;
+  flex-wrap: wrap;
 }
 
-.tweet-footer a {
+.risk-tag {
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+.risk-low {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.risk-medium {
+  background: #fff3e0;
+  color: #e65100;
+}
+
+.risk-high {
+  background: #ffebee;
+  color: #c62828;
+}
+
+.horizon-tag {
+  background: #f3e5f5;
+  color: #7b1fa2;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.source-link {
+  margin-left: auto;
   color: var(--primary);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.source-link:hover {
+  text-decoration: underline;
 }

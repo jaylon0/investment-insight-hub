@@ -54,7 +54,7 @@ export default function ExpertDetail() {
         {data.tweets?.length === 0 ? (
           <div className="empty">暂无推文</div>
         ) : (
-          data.tweets?.map(t => <TweetCard key={t._id} tweet={{ ...t, influencer: data }} />)
+          data.tweets?.map(t => <TweetCard key={t.id} tweet={{ ...t, influencer: data }} />)
         )}
       </div>
     </div>

@@ -4,11 +4,15 @@ import { getFeed } from '../utils/api'
 import './Feed.css'
 
 const filters = [
-  { key: 'all', label: '全部' },
-  { key: 'bullish', label: '看多' },
-  { key: 'bearish', label: '看空' },
-  { key: 'macro', label: '宏观' },
-  { key: 'techstock', label: '科技股' }
+  { key: 'all', label: '全部', emoji: '📋' },
+  { key: 'bullish', label: '看多', emoji: '📈' },
+  { key: 'bearish', label: '看空', emoji: '📉' },
+  { key: 'macro', label: '宏观', emoji: '🌍' },
+  { key: 'stock', label: '选股', emoji: '🎯' },
+  { key: 'quant', label: '量化', emoji: '🔢' },
+  { key: 'tech', label: '技术', emoji: '📊' },
+  { key: 'fund', label: '基金', emoji: '💰' },
+  { key: 'techstock', label: '科技股', emoji: '💻' }
 ]
 
 export default function Feed() {
@@ -29,7 +33,7 @@ export default function Feed() {
     try {
       const params = { page: p, pageSize: 20 }
       if (activeFilter === 'bullish' || activeFilter === 'bearish') params.sentiment = activeFilter
-      if (activeFilter === 'macro' || activeFilter === 'techstock') params.category = activeFilter
+      else if (activeFilter !== 'all') params.category = activeFilter
       const data = await getFeed(params)
       setTweets(p === 1 ? data : [...tweets, ...data])
       setHasMore(data.length >= 20)
@@ -46,6 +50,11 @@ export default function Feed() {
 
   return (
     <div className="feed">
+      <div className="feed-header">
+        <h2>信息流</h2>
+        <p>浏览所有投资大V的最新观点</p>
+      </div>
+
       <div className="filter-bar">
         {filters.map(f => (
           <button
@@ -53,13 +62,14 @@ export default function Feed() {
             className={`filter-item ${activeFilter === f.key ? 'active' : ''}`}
             onClick={() => setActiveFilter(f.key)}
           >
+            <span className="filter-emoji">{f.emoji}</span>
             {f.label}
           </button>
         ))}
       </div>
 
       <div className="feed-list">
-        {tweets.map(t => <TweetCard key={t._id} tweet={t} />)}
+        {tweets.map(t => <TweetCard key={t.id} tweet={t} />)}
         {loading && <div className="loading">加载中...</div>}
         {!loading && tweets.length === 0 && <div className="empty">暂无数据</div>}
         {!loading && hasMore && tweets.length > 0 && (

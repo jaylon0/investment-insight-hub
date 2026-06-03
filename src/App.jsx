@@ -4,6 +4,7 @@ import Feed from './pages/Feed'
 import Experts from './pages/Experts'
 import Stocks from './pages/Stocks'
 import Insights from './pages/Insights'
+import Sectors from './pages/Sectors'
 import './App.css'
 
 function App() {
@@ -17,6 +18,7 @@ function App() {
             <NavLink to="/feed">信息流</NavLink>
             <NavLink to="/experts">大V</NavLink>
             <NavLink to="/stocks">股票</NavLink>
+            <NavLink to="/sectors">板块</NavLink>
             <NavLink to="/insights">AI洞察</NavLink>
           </nav>
         </div>
@@ -28,6 +30,7 @@ function App() {
             <Route path="/feed" element={<Feed />} />
             <Route path="/experts" element={<Experts />} />
             <Route path="/stocks" element={<Stocks />} />
+            <Route path="/sectors" element={<Sectors />} />
             <Route path="/insights" element={<Insights />} />
           </Routes>
         </div>
