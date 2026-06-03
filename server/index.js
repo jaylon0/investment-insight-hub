@@ -17,10 +17,12 @@ const MIMO_API_KEY = process.env.MIMO_API_KEY || ''
 
 // Nitter instances (public, no API key needed)
 const NITTER_INSTANCES = [
-  'https://nitter.privacydev.net',
+  'https://xcancel.com',
   'https://nitter.poast.org',
-  'https://nitter.woodland.cafe',
-  'https://nitter.esmailelbob.xyz'
+  'https://nitter.privacyredirect.com',
+  'https://nitter.space',
+  'https://nitter.tiekoetter.com',
+  'https://nitter.kareem.one'
 ]
 
 /**
@@ -376,6 +378,115 @@ app.get('/api/insights', (req, res) => {
   }
 
   res.json({ sentiment, hotStocks, network: { nodes, links }, totalAnalysis: recentAnalysis.length })
+})
+
+// Manual tweet addition endpoint
+app.post('/api/tweets', async (req, res) => {
+  const { handle, content, url } = req.body
+
+  if (!content || !content.trim()) {
+    return res.status(400).json({ error: 'Content is required' })
+  }
+
+  // Find influencer by handle
+  let influencerId = null
+  if (handle) {
+    const inf = db.influencers.find(i => i.handle.toLowerCase() === handle.toLowerCase())
+    if (inf) influencerId = inf.id
+  }
+
+  // If no handle match, use first influencer as default
+  if (!influencerId) {
+    influencerId = 1
+  }
+
+  // Add tweet
+  const newTweet = {
+    id: db.tweets.length + 1,
+    influencerId,
+    tweetId: `manual_${Date.now()}`,
+    content: content.trim(),
+    contentZh: '',
+    url: url || '',
+    publishedAt: new Date().toISOString(),
+    crawledAt: new Date().toISOString(),
+    status: 'pending'
+  }
+
+  db.tweets.push(newTweet)
+  saveDB(db)
+
+  // Trigger analysis
+  try {
+    const response = await axios.post(`${MIMO_API_URL}/chat/completions`, {
+      model: 'mimo-v2.5-pro',
+      messages: [
+        { role: 'system', content: '你是一个专业的金融分析师助手。请严格按照要求的JSON格式返回分析结果。' },
+        { role: 'user', content: `分析以下推文，返回 JSON：
+{"summary":"一句话中文摘要","contentZh":"中文翻译","sentiment":"bullish/bearish/neutral","sentimentScore":0-1,"mentionedStocks":[{"ticker":"代码","name":"公司","action":"buy/sell/hold/watch","targetPrice":数字或null,"confidence":0-1}],"keyInsights":["观点"],"riskLevel":"low/medium/high","timeHorizon":"short/medium/long"}
+
+推文：${content}` }
+      ],
+      temperature: 0.2
+    }, {
+      headers: { 'Authorization': `Bearer ${MIMO_API_KEY}` },
+      timeout: 60000
+    })
+
+    const result = response.data.choices[0].message.content
+    const jsonMatch = result.match(/\{[\s\S]*\}/)
+    const analysis = JSON.parse(jsonMatch ? jsonMatch[0] : '{}')
+
+    db.analysis.push({
+      id: db.analysis.length + 1,
+      tweetId: newTweet.id,
+      influencerId,
+      summary: analysis.summary,
+      sentiment: analysis.sentiment,
+      sentimentScore: analysis.sentimentScore,
+      mentionedStocks: analysis.mentionedStocks || [],
+      keyInsights: analysis.keyInsights || [],
+      riskLevel: analysis.riskLevel,
+      timeHorizon: analysis.timeHorizon,
+      processedAt: new Date().toISOString()
+    })
+
+    newTweet.status = 'processed'
+    newTweet.contentZh = analysis.contentZh
+
+    // Update stock aggregation
+    for (const s of (analysis.mentionedStocks || [])) {
+      let stock = db.stocks.find(st => st.ticker === s.ticker)
+      const stockAnalysis = db.analysis.filter(a =>
+        (a.mentionedStocks || []).some(ms => ms.ticker === s.ticker)
+      )
+
+      if (stock) {
+        stock.name = s.name
+        stock.mentionCount = stockAnalysis.length
+        stock.sentimentBullish = stockAnalysis.filter(a => a.sentiment === 'bullish').length
+        stock.sentimentBearish = stockAnalysis.filter(a => a.sentiment === 'bearish').length
+        stock.sentimentNeutral = stockAnalysis.filter(a => a.sentiment === 'neutral').length
+      } else {
+        db.stocks.push({
+          id: db.stocks.length + 1,
+          ticker: s.ticker,
+          name: s.name,
+          mentionCount: 1,
+          sentimentBullish: analysis.sentiment === 'bullish' ? 1 : 0,
+          sentimentBearish: analysis.sentiment === 'bearish' ? 1 : 0,
+          sentimentNeutral: analysis.sentiment === 'neutral' ? 1 : 0,
+          lastUpdated: new Date().toISOString()
+        })
+      }
+    }
+
+    saveDB(db)
+    res.json({ success: true, tweet: newTweet, analysis })
+  } catch (err) {
+    console.error('Analysis failed:', err.message)
+    res.json({ success: true, tweet: newTweet, analysis: null, error: 'Analysis failed' })
+  }
 })
 
 // Crawl endpoint - Now using Nitter

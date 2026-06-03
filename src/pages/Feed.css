@@ -2,6 +2,12 @@
   margin-bottom: 24px;
 }
 
+.feed-header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
 .feed-header h2 {
   font-size: 28px;
   font-weight: 700;
@@ -11,6 +17,57 @@
 .feed-header p {
   color: var(--text-secondary);
   font-size: 15px;
+}
+
+.add-tweet-form {
+  margin-bottom: 24px;
+}
+
+.add-tweet-form h3 {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.form-desc {
+  color: var(--text-muted);
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 6px;
+  color: var(--text);
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 14px;
+  font-family: inherit;
+  transition: border-color 0.2s;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 100px;
 }
 
 .filter-bar {

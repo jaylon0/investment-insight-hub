@@ -21,6 +21,9 @@ export default function Feed() {
   const [activeFilter, setActiveFilter] = useState('all')
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(true)
+  const [showAddForm, setShowAddForm] = useState(false)
+  const [newTweet, setNewTweet] = useState({ handle: '', content: '', url: '' })
+  const [adding, setAdding] = useState(false)
 
   useEffect(() => {
     setPage(1)
@@ -48,12 +51,76 @@ export default function Feed() {
     loadFeed(next)
   }
 
+  const handleAddTweet = async () => {
+    if (!newTweet.content.trim()) return
+    setAdding(true)
+    try {
+      const res = await fetch('/api/tweets', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newTweet)
+      })
+      const data = await res.json()
+      if (data.success) {
+        setNewTweet({ handle: '', content: '', url: '' })
+        setShowAddForm(false)
+        loadFeed(1)
+      }
+    } finally {
+      setAdding(false)
+    }
+  }
+
   return (
     <div className="feed">
       <div className="feed-header">
-        <h2>信息流</h2>
-        <p>浏览所有投资大V的最新观点</p>
+        <div className="feed-header-top">
+          <div>
+            <h2>信息流</h2>
+            <p>浏览所有投资大V的最新观点</p>
+          </div>
+          <button className="btn btn-primary" onClick={() => setShowAddForm(!showAddForm)}>
+            {showAddForm ? '取消' : '+ 添加推文'}
+          </button>
+        </div>
       </div>
+
+      {showAddForm && (
+        <div className="add-tweet-form card">
+          <h3>手动添加推文</h3>
+          <p className="form-desc">粘贴推文内容，AI 会自动分析翻译</p>
+          <div className="form-group">
+            <label>大V Handle（可选）</label>
+            <input
+              type="text"
+              placeholder="例如: jimcramer"
+              value={newTweet.handle}
+              onChange={e => setNewTweet({ ...newTweet, handle: e.target.value })}
+            />
+          </div>
+          <div className="form-group">
+            <label>推文内容 *</label>
+            <textarea
+              placeholder="粘贴推文原文..."
+              value={newTweet.content}
+              onChange={e => setNewTweet({ ...newTweet, content: e.target.value })}
+              rows={4}
+            />
+          </div>
+          <div className="form-group">
+            <label>推文链接（可选）</label>
+            <input
+              type="text"
+              placeholder="https://x.com/..."
+              value={newTweet.url}
+              onChange={e => setNewTweet({ ...newTweet, url: e.target.value })}
+            />
+          </div>
+          <button className="btn btn-primary" onClick={handleAddTweet} disabled={adding || !newTweet.content.trim()}>
+            {adding ? '添加中...' : '添加并分析'}
+          </button>
+        </div>
+      )}
 
       <div className="filter-bar">
         {filters.map(f => (
