@@ -11,9 +11,109 @@ const app = express()
 app.use(cors())
 app.use(express.json())
 
-// MiMo API
-const MIMO_API_URL = 'https://token-plan-ams.xiaomimimo.com/v1'
-const MIMO_API_KEY = 'tp-e88i2id2qrm7jw6khlccdqq2j1232sdlq5dkcnaa9s4b2315'
+// MiMo API - Set via environment variables
+const MIMO_API_URL = process.env.MIMO_API_URL || 'https://token-plan-ams.xiaomimimo.com/v1'
+const MIMO_API_KEY = process.env.MIMO_API_KEY || ''
+
+// Nitter instances (public, no API key needed)
+const NITTER_INSTANCES = [
+  'https://nitter.privacydev.net',
+  'https://nitter.poast.org',
+  'https://nitter.woodland.cafe',
+  'https://nitter.esmailelbob.xyz'
+]
+
+/**
+ * Fetch tweets from Nitter (open-source Twitter frontend)
+ * @param {string} handle - Twitter handle
+ * @param {number} count - Number of tweets to fetch
+ * @returns {Array} - Array of tweet objects
+ */
+async function fetchFromNitter(handle, count = 5) {
+  for (const instance of NITTER_INSTANCES) {
+    try {
+      const url = `${instance}/${handle}`
+      console.log(`Fetching from Nitter: ${url}`)
+
+      const response = await axios.get(url, {
+        timeout: 15000,
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
+        }
+      })
+
+      const html = response.data
+      const tweets = parseNitterHTML(html, handle)
+
+      if (tweets.length > 0) {
+        console.log(`Found ${tweets.length} tweets from @${handle}`)
+        return tweets.slice(0, count)
+      }
+    } catch (err) {
+      console.error(`Nitter instance ${instance} failed:`, err.message)
+      continue
+    }
+  }
+
+  console.error(`All Nitter instances failed for @${handle}`)
+  return []
+}
+
+/**
+ * Parse Nitter HTML to extract tweets
+ */
+function parseNitterHTML(html, handle) {
+  const tweets = []
+
+  // Match tweet content divs
+  const tweetRegex = /<div class="tweet-content[^"]*"[^>]*>([\s\S]*?)<\/div>/gi
+  const dateRegex = /<span class="tweet-date"[^>]*>[\s\S]*?title="([^"]*?)"/gi
+  const linkRegex = /<a class="tweet-link"[^>]*href="([^"]*?)"/gi
+
+  const contents = []
+  const dates = []
+  const links = []
+
+  let match
+
+  // Extract tweet contents
+  while ((match = tweetRegex.exec(html)) !== null) {
+    const content = match[1]
+      .replace(/<[^>]*>/g, '') // Remove HTML tags
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/&#39;/g, "'")
+      .replace(/\s+/g, ' ')
+      .trim()
+
+    if (content.length > 10) { // Filter out empty/short content
+      contents.push(content)
+    }
+  }
+
+  // Extract dates
+  while ((match = dateRegex.exec(html)) !== null) {
+    dates.push(match[1])
+  }
+
+  // Extract links
+  while ((match = linkRegex.exec(html)) !== null) {
+    links.push(match[1])
+  }
+
+  // Combine data
+  for (let i = 0; i < contents.length; i++) {
+    tweets.push({
+      content: contents[i],
+      publishedAt: dates[i] ? new Date(dates[i]).toISOString() : new Date().toISOString(),
+      url: links[i] ? `https://x.com${links[i]}` : `https://x.com/${handle}`
+    })
+  }
+
+  return tweets
+}
 
 // Seed influencers
 const seedInfluencers = [
@@ -278,7 +378,7 @@ app.get('/api/insights', (req, res) => {
   res.json({ sentiment, hotStocks, network: { nodes, links }, totalAnalysis: recentAnalysis.length })
 })
 
-// Crawl endpoint
+// Crawl endpoint - Now using Nitter
 app.post('/api/crawl', async (req, res) => {
   const { batch = 0, batchSize = 3 } = req.body
   const allInf = db.influencers.filter(i => i.isActive)
@@ -288,23 +388,14 @@ app.post('/api/crawl', async (req, res) => {
   if (batchInf.length === 0) return res.json({ message: 'All done', done: true })
 
   let totalNew = 0
+  const results = []
+
   for (const inf of batchInf) {
     try {
-      const response = await axios.post(`${MIMO_API_URL}/chat/completions`, {
-        model: 'mimo-v2.5-pro',
-        messages: [
-          { role: 'system', content: '你是一个数据采集助手。请严格按照要求的JSON格式返回数据。' },
-          { role: 'user', content: `请使用网页搜索功能，查找 Twitter/X 用户 @${inf.handle} 最近发布的推文内容。返回 JSON 数组，每条包含 content(推文完整原文)、publishedAt(时间)、url(链接)。找不到返回 []。最多返回 2 条。` }
-        ],
-        temperature: 0.1
-      }, {
-        headers: { 'Authorization': `Bearer ${MIMO_API_KEY}` },
-        timeout: 60000
-      })
+      console.log(`Crawling @${inf.handle}...`)
 
-      const content = response.data.choices[0].message.content
-      const jsonMatch = content.match(/\[[\s\S]*\]/)
-      const tweets = JSON.parse(jsonMatch ? jsonMatch[0] : '[]')
+      // Use Nitter to fetch tweets
+      const tweets = await fetchFromNitter(inf.handle, 3)
 
       for (const t of tweets) {
         const existing = db.tweets.find(tw => tw.influencerId === inf.id && tw.content === t.content)
@@ -312,25 +403,41 @@ app.post('/api/crawl', async (req, res) => {
           db.tweets.push({
             id: db.tweets.length + 1,
             influencerId: inf.id,
-            tweetId: `web_${Date.now()}`,
+            tweetId: `nitter_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
             content: t.content,
             contentZh: '',
-            url: t.url || '',
-            publishedAt: t.publishedAt || new Date().toISOString(),
+            url: t.url,
+            publishedAt: t.publishedAt,
             crawledAt: new Date().toISOString(),
             status: 'pending'
           })
           totalNew++
         }
       }
+
+      results.push({
+        handle: inf.handle,
+        found: tweets.length,
+        new: tweets.filter(t => !db.tweets.find(tw => tw.influencerId === inf.id && tw.content === t.content)).length
+      })
+
+      // Small delay between requests
+      await new Promise(resolve => setTimeout(resolve, 1000))
     } catch (err) {
       console.error(`Crawl @${inf.handle} failed:`, err.message)
+      results.push({ handle: inf.handle, error: err.message })
     }
   }
 
   saveDB(db)
   const done = start + batchSize >= allInf.length
-  res.json({ totalNew, batch, done, nextBatch: done ? null : batch + 1 })
+  res.json({
+    totalNew,
+    batch,
+    done,
+    nextBatch: done ? null : batch + 1,
+    results
+  })
 })
 
 // Analyze endpoint
