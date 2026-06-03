@@ -1,0 +1,60 @@
+.stock-header {
+  background: white;
+  border-radius: var(--radius);
+  padding: 32px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow);
+}
+
+.stock-header .stock-ticker {
+  font-size: 32px;
+  font-weight: 700;
+}
+
+.stock-header .stock-name {
+  font-size: 16px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+.stock-stats {
+  display: flex;
+  gap: 40px;
+  margin-top: 20px;
+}
+
+.stock-stats .stat-value {
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.stock-stats .stat-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.sentiment-summary {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 16px;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.sentiment-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.dot.bullish { background: #4caf50; }
+.dot.bearish { background: #f44336; }
+.dot.neutral { background: #ff9800; }

@@ -1,0 +1,85 @@
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 768px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.sentiment-bar {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 12px;
+}
+
+.sentiment-item {
+  text-align: center;
+}
+
+.sentiment-value {
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.sentiment-value.bullish { color: #4caf50; }
+.sentiment-value.bearish { color: #f44336; }
+.sentiment-value.neutral { color: #ff9800; }
+
+.sentiment-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.sentiment-visual {
+  display: flex;
+  height: 8px;
+  border-radius: 4px;
+  overflow: hidden;
+  background: #f0f0f0;
+}
+
+.bar-bullish { background: #4caf50; }
+.bar-neutral { background: #ff9800; }
+.bar-bearish { background: #f44336; }
+
+.stock-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.stock-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  color: var(--text);
+  transition: background 0.2s;
+}
+
+.stock-item:hover {
+  background: #e8e8e8;
+}
+
+.stock-ticker {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.stock-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stock-mentions {
+  font-size: 12px;
+  color: var(--text-muted);
+}
