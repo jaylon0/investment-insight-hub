@@ -1,0 +1,187 @@
+{
+  "influencers": [
+    {
+      "id": 1,
+      "handle": "zaborsky",
+      "displayName": "Serenity",
+      "bio": "美股购买预测和建议",
+      "category": "macro",
+      "followers": 50000,
+      "isActive": true
+    },
+    {
+      "id": 2,
+      "handle": "DeItaone",
+      "displayName": "DeItaone",
+      "bio": "金融快讯第一手来源",
+      "category": "macro",
+      "followers": 800000,
+      "isActive": true
+    },
+    {
+      "id": 3,
+      "handle": "FirstSquawk",
+      "displayName": "First Squawk",
+      "bio": "市场快讯",
+      "category": "macro",
+      "followers": 600000,
+      "isActive": true
+    },
+    {
+      "id": 4,
+      "handle": "SoberLook",
+      "displayName": "Sober Look",
+      "bio": "宏观数据分析",
+      "category": "macro",
+      "followers": 200000,
+      "isActive": true
+    },
+    {
+      "id": 5,
+      "handle": "CathieDWood",
+      "displayName": "Cathie Wood",
+      "bio": "ARK Invest CEO",
+      "category": "stock",
+      "followers": 1500000,
+      "isActive": true
+    },
+    {
+      "id": 6,
+      "handle": "jimcramer",
+      "displayName": "Jim Cramer",
+      "bio": "CNBC Mad Money 主持人",
+      "category": "stock",
+      "followers": 2000000,
+      "isActive": true
+    },
+    {
+      "id": 7,
+      "handle": "ChanosKynikos",
+      "displayName": "Jim Chanos",
+      "bio": "著名空头",
+      "category": "stock",
+      "followers": 300000,
+      "isActive": true
+    },
+    {
+      "id": 8,
+      "handle": "MichaelBurryScion",
+      "displayName": "Michael Burry",
+      "bio": "大空头",
+      "category": "stock",
+      "followers": 400000,
+      "isActive": true
+    },
+    {
+      "id": 9,
+      "handle": "unusual_whales",
+      "displayName": "Unusual Whales",
+      "bio": "异常期权活动追踪",
+      "category": "quant",
+      "followers": 900000,
+      "isActive": true
+    },
+    {
+      "id": 10,
+      "handle": "optionslam",
+      "displayName": "OptionSlam",
+      "bio": "期权数据分析",
+      "category": "quant",
+      "followers": 150000,
+      "isActive": true
+    },
+    {
+      "id": 11,
+      "handle": "tier10k",
+      "displayName": "Tier10k",
+      "bio": "SEC 文件速报",
+      "category": "quant",
+      "followers": 250000,
+      "isActive": true
+    },
+    {
+      "id": 12,
+      "handle": "traderstewie",
+      "displayName": "Trader Stewie",
+      "bio": "技术分析图表",
+      "category": "tech",
+      "followers": 180000,
+      "isActive": true
+    },
+    {
+      "id": 13,
+      "handle": "ChartMonkey",
+      "displayName": "Chart Monkey",
+      "bio": "K线形态分析",
+      "category": "tech",
+      "followers": 120000,
+      "isActive": true
+    },
+    {
+      "id": 14,
+      "handle": "markets",
+      "displayName": "Bloomberg Markets",
+      "bio": "Bloomberg 官方",
+      "category": "tech",
+      "followers": 3000000,
+      "isActive": true
+    },
+    {
+      "id": 15,
+      "handle": "EricBalchunas",
+      "displayName": "Eric Balchunas",
+      "bio": "Bloomberg ETF 分析师",
+      "category": "fund",
+      "followers": 200000,
+      "isActive": true
+    },
+    {
+      "id": 16,
+      "handle": "MebFaber",
+      "displayName": "Meb Faber",
+      "bio": "Cambria Investment 联合创始人",
+      "category": "fund",
+      "followers": 250000,
+      "isActive": true
+    },
+    {
+      "id": 17,
+      "handle": "RyanDetrick",
+      "displayName": "Ryan Detrick",
+      "bio": "LPL Financial 首席策略师",
+      "category": "fund",
+      "followers": 180000,
+      "isActive": true
+    },
+    {
+      "id": 18,
+      "handle": "TashaARK",
+      "displayName": "Tasha ARK",
+      "bio": "ARK 分析师",
+      "category": "techstock",
+      "followers": 100000,
+      "isActive": true
+    },
+    {
+      "id": 19,
+      "handle": "Jukanlosreve",
+      "displayName": "Jukanlosreve",
+      "bio": "半导体行业分析",
+      "category": "techstock",
+      "followers": 80000,
+      "isActive": true
+    },
+    {
+      "id": 20,
+      "handle": "SamirTabar",
+      "displayName": "Samir Tabar",
+      "bio": "AI/科技股投资观点",
+      "category": "techstock",
+      "followers": 60000,
+      "isActive": true
+    }
+  ],
+  "tweets": [],
+  "analysis": [],
+  "stocks": []
+}
