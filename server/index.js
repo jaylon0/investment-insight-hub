@@ -15,19 +15,103 @@ app.use(express.json())
 const MIMO_API_URL = process.env.MIMO_API_URL || 'https://token-plan-ams.xiaomimimo.com/v1'
 const MIMO_API_KEY = process.env.MIMO_API_KEY || ''
 
-// Nitter instances (public, no API key needed)
-const NITTER_INSTANCES = [
-  'https://xcancel.com',
-  'https://nitter.poast.org',
-  'https://nitter.privacyredirect.com',
-  'https://nitter.space',
-  'https://nitter.tiekoetter.com',
-  'https://nitter.kareem.one'
-]
+// RapidAPI Twitter Configuration
+const RAPIDAPI_HOST = 'twitter241.p.rapidapi.com'
+const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY || '2b1e4c04cbmsh08e51472f886af2p1b91a5jsne2fba18c1555'
 
 /**
- * Fetch tweets from Nitter (open-source Twitter frontend)
+ * Get user ID from username
+ * @param {string} username - Twitter username
+ * @returns {string|null} - User ID or null
+ */
+async function getUserIdByUsername(username) {
+  try {
+    const response = await axios.get(`https://${RAPIDAPI_HOST}/user`, {
+      params: { username },
+      headers: {
+        'x-rapidapi-host': RAPIDAPI_HOST,
+        'x-rapidapi-key': RAPIDAPI_KEY
+      },
+      timeout: 10000
+    })
+
+    const data = response.data
+    if (data && data.result && data.result.data && data.result.data.user) {
+      return data.result.data.user.result.rest_id
+    }
+    return null
+  } catch (err) {
+    console.error(`Get user ID for @${username} failed:`, err.message)
+    return null
+  }
+}
+
+/**
+ * Fetch tweets from RapidAPI Twitter
  * @param {string} handle - Twitter handle
+ * @param {number} count - Number of tweets to fetch
+ * @returns {Array} - Array of tweet objects
+ */
+async function fetchFromRapidAPI(handle, count = 5) {
+  try {
+    // First get user ID
+    const userId = await getUserIdByUsername(handle)
+    if (!userId) {
+      console.error(`Could not find user ID for @${handle}`)
+      return []
+    }
+
+    console.log(`Found user ID for @${handle}: ${userId}`)
+
+    // Then get user tweets
+    const response = await axios.get(`https://${RAPIDAPI_HOST}/user-tweets`, {
+      params: { user: userId, count },
+      headers: {
+        'x-rapidapi-host': RAPIDAPI_HOST,
+        'x-rapidapi-key': RAPIDAPI_KEY
+      },
+      timeout: 15000
+    })
+
+    const data = response.data
+    const tweets = []
+
+    if (data && data.result && data.result.timeline && data.result.timeline.instructions) {
+      const instructions = data.result.timeline.instructions
+      for (const instruction of instructions) {
+        if (instruction.type === 'TimelineAddEntries' && instruction.entries) {
+          for (const entry of instruction.entries) {
+            if (entry.content && entry.content.itemContent && entry.content.itemContent.tweet_results) {
+              const tweetResult = entry.content.itemContent.tweet_results.result
+              if (tweetResult && tweetResult.legacy) {
+                const legacy = tweetResult.legacy
+                const user = tweetResult.core?.user_results?.result?.legacy
+
+                tweets.push({
+                  tweetId: legacy.id_str,
+                  content: legacy.full_text,
+                  publishedAt: new Date(legacy.created_at).toISOString(),
+                  url: `https://x.com/${handle}/status/${legacy.id_str}`,
+                  retweetCount: legacy.retweet_count,
+                  favoriteCount: legacy.favorite_count,
+                  replyCount: legacy.reply_count,
+                  userName: user?.name || handle,
+                  userHandle: user?.screen_name || handle
+                })
+              }
+            }
+          }
+        }
+      }
+    }
+
+    console.log(`Found ${tweets.length} tweets from @${handle}`)
+    return tweets.slice(0, count)
+  } catch (err) {
+    console.error(`Fetch tweets for @${handle} failed:`, err.message)
+    return []
+  }
+}
  * @param {number} count - Number of tweets to fetch
  * @returns {Array} - Array of tweet objects
  */
@@ -489,7 +573,7 @@ app.post('/api/tweets', async (req, res) => {
   }
 })
 
-// Crawl endpoint - Now using Nitter
+// Crawl endpoint - Now using RapidAPI
 app.post('/api/crawl', async (req, res) => {
   const { batch = 0, batchSize = 3 } = req.body
   const allInf = db.influencers.filter(i => i.isActive)
@@ -505,16 +589,16 @@ app.post('/api/crawl', async (req, res) => {
     try {
       console.log(`Crawling @${inf.handle}...`)
 
-      // Use Nitter to fetch tweets
-      const tweets = await fetchFromNitter(inf.handle, 3)
+      // Use RapidAPI to fetch tweets
+      const tweets = await fetchFromRapidAPI(inf.handle, 5)
 
       for (const t of tweets) {
-        const existing = db.tweets.find(tw => tw.influencerId === inf.id && tw.content === t.content)
+        const existing = db.tweets.find(tw => tw.tweetId === t.tweetId)
         if (!existing) {
           db.tweets.push({
             id: db.tweets.length + 1,
             influencerId: inf.id,
-            tweetId: `nitter_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            tweetId: t.tweetId,
             content: t.content,
             contentZh: '',
             url: t.url,
@@ -529,11 +613,11 @@ app.post('/api/crawl', async (req, res) => {
       results.push({
         handle: inf.handle,
         found: tweets.length,
-        new: tweets.filter(t => !db.tweets.find(tw => tw.influencerId === inf.id && tw.content === t.content)).length
+        new: tweets.filter(t => !db.tweets.find(tw => tw.tweetId === t.tweetId)).length
       })
 
-      // Small delay between requests
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      // Small delay between requests to respect rate limits
+      await new Promise(resolve => setTimeout(resolve, 2000))
     } catch (err) {
       console.error(`Crawl @${inf.handle} failed:`, err.message)
       results.push({ handle: inf.handle, error: err.message })
